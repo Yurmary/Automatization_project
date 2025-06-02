@@ -1,6 +1,33 @@
+# Системные файлы
+.*
+!.gitignore
+!.gitattributes
+
+# Временные файлы
 *.pyc
 __pycache__/
-venv/
-.vscode/
+*.swp
+*.bak
+
+# IDE файлы
 .idea/
+.vscode/
+
+# Virtualenv
+venv/
 .venv/
+
+# Специфические папки
+img/
+configs/
+data/
+sql/
+sales_automation/
+src/
+
+# Исключения
+!configs/
+!data/
+!sql/
+!sales_automation/
+!src/
