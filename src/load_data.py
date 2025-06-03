@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlalchemy as sa
 import logging
-import os # Импортируем модуль os
+import os 
 from configs.config import CONFIG
 
 logging.basicConfig(level=logging.INFO)
