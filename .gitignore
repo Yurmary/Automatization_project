@@ -2,33 +2,56 @@
 .*
 !.gitignore
 !.gitattributes
+!.env
+!.flake8
+!.pre-commit-config.yaml
 
 # Временные файлы
 *.pyc
 __pycache__/
 *.swp
 *.bak
+*.tmp
+*.log
+*.DS_Store
+Thumbs.db
 
 # IDE файлы
 .idea/
 .vscode/
+.ipynb_checkpoints/
 
 # Virtualenv
 venv/
 .venv/
+env/
+.env/
 
 # Специфические папки
 img/
 configs/
 data/
 sql/
-sales_automation/
+reports/
+logs/
 src/
+tests/
+docs/
+
+# Документация
+README.md
+CHANGELOG.md
+LICENSE
 
 # Исключения
 !configs/
 !data/
 !sql/
 !src/
+!tests/
 !docs/
 !img/
+
+# Специфические файлы
+.env.example
+requirements.txt
