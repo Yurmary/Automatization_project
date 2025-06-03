@@ -29,5 +29,6 @@ src/
 !configs/
 !data/
 !sql/
-!sales_automation/
 !src/
+!docs/
+!img/
