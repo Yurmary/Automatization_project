@@ -2,16 +2,18 @@ import csv
 from datetime import datetime
 import random
 import os
-from configs.config import CONFIG
+import shutil
+from pathlib import Path
+import configparser
 import logging
 
+logging.basicConfig(level=logging.INFO)
 
-# Настройка логирования
-logging.basicConfig(
-    level=logging.INFO
-)
+# Загрузка конфига
+CONFIG_PATH = Path(__file__).parent.parent / "configs" / "config.ini"
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
 
-# Список категорий и товаров
 CATEGORIES = ["бытовая химия", "текстиль", "посуда"]
 ITEMS = {
     "бытовая химия": ["гель для стирки", "порошок", "средство для мытья посуды"],
@@ -20,47 +22,49 @@ ITEMS = {
 }
 
 
-def generate_filename(shop_id, cash_id):
+def clear_data_dir(data_path: str) -> bool:
+    """Очищает папку с данными перед генерацией"""
     try:
-        data_path = CONFIG["data_path"]
-        logging.info(f"Используемый путь к данным: {data_path}")
-
-        if not os.path.exists(data_path):
-            logging.info(f"Папка {data_path} не существует, пытаемся создать...")
-            os.makedirs(data_path)
-            logging.info(f"Создана директория: {data_path}")
-
-        return os.path.join(data_path, f"{shop_id}_{cash_id}.csv")
+        if os.path.exists(data_path):
+            shutil.rmtree(data_path)
+        os.makedirs(data_path, exist_ok=True)
+        logging.info(f"Папка {data_path} очищена")
+        return True
     except Exception as e:
-        logging.error(f"Ошибка при создании имени файла: {e}")
-        return None
+        logging.error(f"Ошибка очистки папки: {e}")
+        return False
 
 
-def generate_data(shops=10, cash_per_shop=5):
-    try:
-        for shop_id in range(1, shops + 1):
-            for cash_id in range(1, cash_per_shop + 1):
-                filename = generate_filename(shop_id, cash_id)
+def generate_data():
+    """Генерирует новые данные"""
+    data_path = config["paths"]["data_path"]
 
-                if not filename:
-                    logging.error(f"Ошибка при создании файла для магазина {shop_id}, касса {cash_id}")
-                    continue
+    if config.getboolean("paths", "clean_before_generate"):
+        if not clear_data_dir(data_path):
+            return
 
-                try:
-                    with open(filename, 'w', newline='') as csvfile:
-                        writer = csv.writer(csvfile)
-                        # Добавляем заголовки столбцов
-                        writer.writerow(["doc_id", "item", "category", "amount", "price", "discount", "shop_num", "cash_num"])
+    for shop_id in range(1, 11):  # 10 магазинов
+        for cash_id in range(1, 6):  # 5 касс в каждом
+            filename = Path(data_path) / f"{shop_id}_{cash_id}.csv"
+            try:
+                with open(filename, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(
+                        ["doc_id", "item", "category", "amount", "price", "discount", "shop_num", "cash_num"])
 
-                        for _ in range(random.randint(50, 150)):  # Генерируем от 50 до 150 чеков
-                            doc_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
-                            category = random.choice(CATEGORIES)
-                            item = random.choice(ITEMS[category])
-                            amount = random.randint(1, 10)
-                            price = round(random.uniform(10.0, 100.0), 2)
-                            discount = round(random.uniform(0.0, price), 2)
-                            writer.writerow([doc_id, item, category, amount, price, discount, shop_id, cash_id])
-                except Exception as e:
-                    logging.error(f"Ошибка при записи в файл {filename}: {e}")
-    except Exception as e:
-        logging.error(f"Произошла ошибка: {e}")
+                    for _ in range(random.randint(50, 150)):
+                        doc_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
+                        category = random.choice(CATEGORIES)
+                        item = random.choice(ITEMS[category])
+                        amount = random.randint(1, 10)
+                        price = round(random.uniform(10.0, 100.0), 2)
+                        discount = round(random.uniform(0.0, 5.0), 2)
+                        writer.writerow([doc_id, item, category, amount, price, discount, shop_id, cash_id])
+
+                logging.info(f"Сгенерирован файл {filename.name}")
+            except Exception as e:
+                logging.error(f"Ошибка генерации файла {filename}: {e}")
+
+
+if __name__ == "__main__":
+    generate_data()

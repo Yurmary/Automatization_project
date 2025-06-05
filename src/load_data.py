@@ -1,28 +1,54 @@
 import pandas as pd
 import sqlalchemy as sa
+from sqlalchemy import text
+from pathlib import Path
+import configparser
 import logging
-import os
-from configs.config import CONFIG
 
 logging.basicConfig(level=logging.INFO)
 
-def load_data(db_host, db_port, db_name, db_user, db_password):
-    data_path = CONFIG["data_path"]
+# Загрузка конфига
+CONFIG_PATH = Path(__file__).parent.parent / "configs" / "config.ini"
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
 
-    files = os.listdir(data_path)
 
-    for file in files:
-        if file.endswith('.csv'):
+def load_data():
+    """Загружает данные в БД с очисткой таблицы"""
+    data_path = config["paths"]["data_path"]
+    db_config = config["database"]
+    schema_config = config["schema"]
+
+    engine = sa.create_engine(
+        f"postgresql://{db_config['db_user']}:{db_config['db_password']}@"
+        f"{db_config['db_host']}:{db_config['db_port']}/{db_config['db_name']}"
+    )
+
+    try:
+        # Очистка таблицы
+        with engine.connect() as conn:
+            conn.execute(text(f"TRUNCATE TABLE {schema_config['db_schema']}.{schema_config['db_table']}"))
+            conn.commit()
+        logging.info("Таблица очищена")
+
+        # Загрузка данных
+        for file in Path(data_path).glob("*.csv"):
             try:
-                df = pd.read_csv(os.path.join(data_path, file))
-                engine = sa.create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
-                df.to_sql('sales', engine, if_exists='append', index=False, schema='sales_schema')
-                logging.info(f"Данные из {file} успешно загружены")
+                df = pd.read_csv(file)
+                df.to_sql(
+                    name=schema_config["db_table"],
+                    con=engine,
+                    schema=schema_config["db_schema"],
+                    if_exists="append",
+                    index=False
+                )
+                logging.info(f"Файл {file.name} загружен")
             except Exception as e:
-                logging.error(f"Ошибка при обработке файла {file}: {str(e)}")
+                logging.error(f"Ошибка загрузки {file.name}: {e}")
+
+    except Exception as e:
+        logging.error(f"Ошибка подключения к БД: {e}")
+
 
 if __name__ == "__main__":
-    try:
-        load_data(CONFIG["db_host"], CONFIG["db_port"], CONFIG["db_name"], CONFIG["db_user"], CONFIG["db_password"])
-    except Exception as e:
-        logging.error(f"Ошибка подключения к БД: {str(e)}")
+    load_data()

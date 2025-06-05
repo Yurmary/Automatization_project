@@ -1,26 +1,24 @@
-# Базовые инструменты
-pandas==1.5.3
-python-dotenv==0.21.1
-
-# Работа с базами данных
-sqlalchemy==1.4.46
-psycopg2-binary==2.9.5
-pyodbc==4.0.32
-
-# Автоматизация
-schedule==1.1.0
-pyautogui==0.9.53
-pywin32==304
-
-# Работа с файлами
-openpyxl==3.0.10
-pandas-excel==0.0.9
-pdfplumber==0.5.28
-
-# Веб-автоматизация
-selenium==4.8.0
-beautifulsoup4==4.11.1
-requests==2.28.1
-
-# Индикаторы прогресса
-tqdm==4.64.1
+cachetools==5.5.2
+certifi==2025.1.31
+charset-normalizer==3.4.1
+google-auth==2.38.0
+google-auth-oauthlib==1.2.1
+gspread==6.2.0
+idna==3.10
+numpy==2.0.2
+oauthlib==3.2.2
+pandas==2.2.3
+psycopg2-binary==2.9.10
+pyasn1==0.6.1
+pyasn1_modules==0.4.1
+python-dateutil==2.9.0.post0
+pytz==2025.2
+requests==2.32.3
+requests-oauthlib==2.0.0
+rsa==4.9
+schedule==1.2.2
+six==1.17.0
+SQLAlchemy==2.0.41
+typing_extensions==4.14.0
+tzdata==2025.2
+urllib3==2.3.0
